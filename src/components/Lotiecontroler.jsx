@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
-const Lotiecontroler = ({src, label="name a btn",className,onClick}) => {
+const Lotiecontroler = ({src, label="name a btn",className,cl,onClick}) => {
   const [play, setplay] = useState(null);
 
   const handleMouseEnter = () => {
-    console.log(play);
+   
     if (play) {
       play.setLoop(true); // enable infinite loop
       play.play();
-      console.log(play); // start playing
+      // start playing
     }
   };
   return (
@@ -26,7 +26,7 @@ const Lotiecontroler = ({src, label="name a btn",className,onClick}) => {
           loop={false}
           autoplay={false}
           dotLottieRefCallback={setplay}
-          className="w-7 h-7"
+          className={cl}
         />
         {label}
       </button>
