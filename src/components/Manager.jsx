@@ -1,10 +1,31 @@
-
 import React from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { useState } from "react";
+import Lotiecontroler from "./Lotiecontroler";
+import { useRef ,useState} from "react";
 
 const Manager = () => {
-  const [play, setplay] = useState(null)
+  const ref = useRef();
+  const pass = useRef();
+  const [forms, setforms] = useState({site: "", username: "", password: ""})
+
+  const handelonclick = () => {
+    
+    if (ref.current.src.includes("/eyecross.png")) {
+      ref.current.src = "/eye.png";
+      pass.current.type = "password";
+    } else {
+      pass.current.type = "text";
+      ref.current.src = "/eyecross.png";
+    }
+  };
+ const savePassword=()=>{
+    console.log(forms)
+      
+    }
+
+ const handleChange=(e)=>{
+    setforms({...forms, [e.target.name]: e.target.value })
+ }
 
   return (
     <>
@@ -18,33 +39,40 @@ const Manager = () => {
           <span>Pass</span>
           <span className="text-green-500">U/&gt;</span>
         </h1>
-        <div className="text-white flex-col flex gap-1 p-3">
-          <input
+        <div className="text-yellow-800 flex-col flex gap-1 p-3">
+          <input value={forms.site} name="site" onChange={handleChange}
+            placeholder="Enter the Website URL"
             type="text"
             on
             className="rounded-2xl bg-amber-100 border-2 border-amber-400 hover:bg-amber-300 px-3"
           />
           <div className="flex w-full gap-5 justify-center items-center">
-            <input
+            <input value={forms.username} name="username" onChange={handleChange}
+              placeholder="Enter the User Name"
               className="rounded-2xl bg-amber-100 border-2 border-amber-400 hover:bg-amber-300 px-3 w-full"
               type="text"
             />
-            <input
-              className="rounded-2xl bg-amber-100 border-2 border-amber-400 hover:bg-amber-300 px-3 w-full"
-              type="text"
-            />
+            <div className="relative w-full flex items-center">
+              <input value={forms.password} name="password" onChange={handleChange}
+                placeholder="Enter the Password"
+                className="rounded-2xl bg-amber-100 border-2 border-amber-400 hover:bg-amber-300 px-3 w-full"
+                type="text" ref={pass}
+              />
+              <span
+                className="absolute right-1 cursor-pointer"
+                onClick={handelonclick}
+              >
+                <img src="/eye.png" ref={ref} alt="" width={25} />
+              </span>
+            </div>
           </div>
-          <button
-            type="submit" 
-            className="bg-green-600 w-fit rounded-full px-2 mx-auto flex items-center gap-1"
-          onMouseEnter={() => play?.play()}
-      onMouseLeave={() => play?.goToAndStop(0, true)}>
-            <DotLottieReact src="/addbtn.lottie" loop  autoplay={false}
-      dotLottieRefCallback={setplay}
-      
-      className="w-7 h-7"/>
-            Add Password
-          </button>
+
+          <Lotiecontroler
+            src="/addbtn.lottie"
+            label="Add Pasword"
+            className="bg-green-600 w-fit rounded-full px-2 mx-auto flex items-center gap-1 cursor-pointer border-1 border-red-800 text-blue-50"
+            onClick={savePassword}
+          />
         </div>
       </div>
     </>

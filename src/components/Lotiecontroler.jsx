@@ -1,26 +1,37 @@
-import React from 'react'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import React, { useState } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
-const Lotiecontroler = (src,
-    play,
-    loop = false,
-    onLoad,
-    style,) => {
-    const [player, setPlayer] = useState(null);
-    const dotLottieRefCallback = (ref) => {
-        lottieRef.current=ref;
+const Lotiecontroler = ({src, label="name a btn",className,onClick}) => {
+  const [play, setplay] = useState(null);
 
-      };
-
-    const play=()=>{
-        if (lotie){
-            lotie.play()
-        }
+  const handleMouseEnter = () => {
+    console.log(play);
+    if (play) {
+      play.setLoop(true); // enable infinite loop
+      play.play();
+      console.log(play); // start playing
     }
-
+  };
   return (
-    <></>
-  )
-}
+    <>
+      <button
+        type="button"
+       className={className}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => play?.stop()}
+        onClick={onClick}
+      >
+        <DotLottieReact
+          src={src}
+          loop={false}
+          autoplay={false}
+          dotLottieRefCallback={setplay}
+          className="w-7 h-7"
+        />
+        {label}
+      </button>
+    </>
+  );
+};
 
-export default Lotiecontroler
+export default Lotiecontroler;
