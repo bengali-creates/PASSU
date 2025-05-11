@@ -1,15 +1,23 @@
-import React from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import Lotiecontroler from "./Lotiecontroler";
 import { useRef, useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import { v4 as uuidv4 } from "uuid";
+import React from "react";
 
 const Manager = () => {
   const ref = useRef();
   const pass = useRef();
   const [forms, setforms] = useState({ site: "", username: "", password: "" });
   const [passwordArray, setPasswordArray] = useState([]);
+  const [editId, setEditId] = useState("");
+  const [editForms, setEditForms] = useState({
+    site: "",
+    username: "",
+    password: "",
+  });
 
+  //pass loader
   useEffect(() => {
     let passwords = localStorage.getItem("passwords");
     if (passwords) {
@@ -17,6 +25,7 @@ const Manager = () => {
     }
   }, []);
 
+  //toggle pass shower
   const handelonclick = () => {
     if (ref.current.src.includes("/eyecross.png")) {
       ref.current.src = "/eye.png";
@@ -26,19 +35,21 @@ const Manager = () => {
       ref.current.src = "/eyecross.png";
     }
   };
+
+  //pass saver
   const savePassword = () => {
     if (
       forms.site.length > 3 &&
       forms.username.length > 3 &&
       forms.password.length > 3
     ) {
-      setPasswordArray([...passwordArray, forms]);
+      setPasswordArray([...passwordArray, { ...forms, id: uuidv4() }]);
       localStorage.setItem(
         "passwords",
-        JSON.stringify([...passwordArray, forms])
+        JSON.stringify([...passwordArray, { ...forms, id: uuidv4() }])
       );
-      console.log([...passwordArray, forms]);
-       setforms({ site: "", username: "", password: "" })
+      console.log([...passwordArray, { ...forms, id: uuidv4() }]);
+      setforms({ site: "", username: "", password: "" });
       toast(
         <div className="flex items-center ">
           {
@@ -52,13 +63,13 @@ const Manager = () => {
         </div>,
         {
           position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
         }
       );
     } else {
@@ -81,10 +92,51 @@ const Manager = () => {
     }
   };
 
+  //data deleter
+  const handleDelete = (id) => {
+    console.log(id);
+    setPasswordArray(passwordArray.filter((item) => item.id != id));
+    console.log(passwordArray.filter((item) => item.id != id));
+    localStorage.setItem(
+      "passwords",
+      JSON.stringify(passwordArray.filter((item) => item.id != id))
+    );
+  };
+  
+//   useEffect(() => {
+//   if (editId) {
+//     console.log("Updated editForms:", editForms);
+//   }
+// }, [editForms]);
+
+  //pass ediitor
+  const handleEdit = (id, site, username, password) => {
+    
+    setEditId(id);
+    setEditForms({ site, username, password });
+   
+  };
+
+  //data saver
+  const handleSave=()=>{
+    
+    setPasswordArray(passwordArray.map(item=>
+       item.id===editId?{...item,...editForms}:item
+    ))
+    localStorage.setItem("passwords", JSON.stringify(passwordArray.map(item=>
+       item.id===editId?{...item,...editForms}:item
+    )))
+    console.log("new",passwordArray)
+    setEditId(null)
+    setEditForms({site: "", username: "", password: "" })
+  }
+
+  // data taker
   const handleChange = (e) => {
     setforms({ ...forms, [e.target.name]: e.target.value });
   };
 
+  // text copier
   const copyText = (text) => {
     navigator.clipboard.writeText(text);
     toast("Copied to Clipboard", {
@@ -101,8 +153,7 @@ const Manager = () => {
 
   return (
     <>
-      
-      <ToastContainer/>
+      <ToastContainer />
       <div className="absolute inset-0 -z-10 h-full w-full bg-pink-50 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-600 opacity-20 blur-[50px]"></div>
 
@@ -171,55 +222,127 @@ const Manager = () => {
                     <th className="border-1 ">Site</th>
                     <th className="border-1 ">User Name</th>
                     <th className="border-1 ">Pasword</th>
+                    <th className="border-1 ">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {passwordArray.map((item) => {
                     return (
-                      <tr>
+                      <tr key={item.id}>
                         <td className="w-36 text-center">
-                          <div className="flex items-center justify-center">
-                            <span>{item.site}</span>
-                            <span>
-                              <Lotiecontroler
-                                src="/copy.lottie"
-                                label=""
-                                className="cursor-pointer pt-3 "
-                                cl="w-11 h-11"
-                                onClick={() => {
-                                  copyText(item.site);
-                                }}
-                              />
-                            </span>
-                          </div>
+                          {editId === item.id ? (
+                            <input
+                              type="text"
+                              onChange={(e) => setEditForms({ ...editForms, site: e.target.value })}
+                              value={editForms.site}
+                              className="w-full max-w-md px-4 py-1  rounded bg-violet-700 text-white placeholder-white border border-white focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center">
+                              <span>{item.site}</span>
+                              <span>
+                                <Lotiecontroler
+                                  src="/copy.lottie"
+                                  label=""
+                                  className="cursor-pointer pt-3 "
+                                  cl="w-11 h-11"
+                                  onClick={() => {
+                                    copyText(item.site);
+                                  }}
+                                />
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="w-32 text-center ">
-                          <div className="flex items-center justify-center">
-                            <span>{item.username}</span>{" "}
-                            <span>
-                              <Lotiecontroler
-                                src="/copy.lottie"
-                                label=""
-                                className="cursor-pointer pt-3 "
-                                cl="w-11 h-11"
-                                onClick={() => {
-                                  copyText(item.username);
-                                }}
-                              />
-                            </span>
-                          </div>
+                          {editId === item.id ? (
+                            <input
+                              type="text"
+                              onChange={(e) => setEditForms({ ...editForms, username: e.target.value })}
+                              value={editForms.username}
+                              className="w-full max-w-md px-4 py-1  rounded bg-violet-700 text-white placeholder-white border border-white focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center">
+                              <span>{item.username}</span>{" "}
+                              <span>
+                                <Lotiecontroler
+                                  src="/copy.lottie"
+                                  label=""
+                                  className="cursor-pointer pt-3 "
+                                  cl="w-11 h-11"
+                                  onClick={() => {
+                                    copyText(item.username);
+                                  }}
+                                />
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="w-32 text-center">
-                          <div className="flex items-center justify-center">
-                            <span>{item.password}</span>
-                            <span>
+                          {editId === item.id ? (
+                            <input
+                              type="text"
+                              onChange={(e) => setEditForms({ ...editForms, password: e.target.value })}
+                              value={editForms.password}
+                              className="w-full max-w-md px-4 py-1  rounded bg-violet-700 text-white placeholder-white border border-white focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center">
+                              <span>{item.password}</span>
+                              <span>
+                                <Lotiecontroler
+                                  src="/copy.lottie"
+                                  label=""
+                                  className="cursor-pointer pt-3 "
+                                  cl="w-11 h-11"
+                                  onClick={() => {
+                                    copyText(item.password);
+                                  }}
+                                />
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="w-32 ">
+                          <div className="flex justify-center items-center gap-1">
+                            {editId === item.id ? (
+                              <div className="cursor-pointer" onClick={()=>{handleSave(item.site,
+                                      item.username,
+                                      item.password)}}>
+                                <DotLottieReact
+                                  src="/addbtn.lottie"
+                                  loop={true}
+                                  autoplay={true}
+                                  className="w-7 h-7"
+                                />
+                              </div>
+                            ) : (
+                              <span>
+                                <Lotiecontroler
+                                  src="/edit.lottie"
+                                  label=""
+                                  className="cursor-pointer pt-3 "
+                                  cl="w-10 h-10"
+                                  onClick={() => {
+                                    handleEdit(
+                                      item.id,
+                                      item.site,
+                                      item.username,
+                                      item.password
+                                    );
+                                  }}
+                                />
+                              </span>
+                            )}
+                            <span className="">
                               <Lotiecontroler
-                                src="/copy.lottie"
+                                src="/delete.lottie"
                                 label=""
-                                className="cursor-pointer pt-3 "
-                                cl="w-11 h-11"
+                                className="cursor-pointer "
+                                cl="w-12 h-12"
                                 onClick={() => {
-                                  copyText(item.password);
+                                  handleDelete(item.id);
                                 }}
                               />
                             </span>
@@ -234,7 +357,6 @@ const Manager = () => {
           </div>
         </div>
       </div>
-      
     </>
   );
 };
