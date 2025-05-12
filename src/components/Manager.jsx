@@ -17,12 +17,19 @@ const Manager = () => {
     password: "",
   });
 
+  const getPasswords = async () => {
+        let req = await fetch("http://localhost:3000/")
+        let passwords = await req.json()
+        setPasswordArray(passwords)
+    }
+    
   //pass loader
   useEffect(() => {
     let passwords = localStorage.getItem("passwords");
     if (passwords) {
       setPasswordArray(JSON.parse(passwords));
     }
+    getPasswords()
   }, []);
 
   //toggle pass shower
@@ -37,7 +44,7 @@ const Manager = () => {
   };
 
   //pass saver
-  const savePassword = () => {
+  const savePassword = async() => {
     if (
       forms.site.length > 3 &&
       forms.username.length > 3 &&
@@ -48,6 +55,7 @@ const Manager = () => {
         "passwords",
         JSON.stringify([...passwordArray, { ...forms, id: uuidv4() }])
       );
+        await fetch("http://localhost:3000/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...forms, id: uuidv4() }) })
       console.log([...passwordArray, { ...forms, id: uuidv4() }]);
       setforms({ site: "", username: "", password: "" });
       toast(
@@ -93,7 +101,7 @@ const Manager = () => {
   };
 
   //data deleter
-  const handleDelete = (id) => {
+  const handleDelete = async(id) => {
     console.log(id);
     setPasswordArray(passwordArray.filter((item) => item.id != id));
     console.log(passwordArray.filter((item) => item.id != id));
@@ -101,6 +109,8 @@ const Manager = () => {
       "passwords",
       JSON.stringify(passwordArray.filter((item) => item.id != id))
     );
+    await fetch("http://localhost:3000/", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) })
+
   };
   
 //   useEffect(() => {
@@ -118,7 +128,7 @@ const Manager = () => {
   };
 
   //data saver
-  const handleSave=()=>{
+  const handleSave=async()=>{
     
     setPasswordArray(passwordArray.map(item=>
        item.id===editId?{...item,...editForms}:item
@@ -126,6 +136,12 @@ const Manager = () => {
     localStorage.setItem("passwords", JSON.stringify(passwordArray.map(item=>
        item.id===editId?{...item,...editForms}:item
     )))
+    // will delete existing details
+     await fetch("http://localhost:3000/", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: forms.id }) })
+
+    //  save it 
+  await fetch("http://localhost:3000/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...editForms, id: uuidv4() }) })
+    
     console.log("new",passwordArray)
     setEditId(null)
     setEditForms({site: "", username: "", password: "" })
